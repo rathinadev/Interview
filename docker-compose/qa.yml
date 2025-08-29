@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  # ===== QA ENGINEER SERVICES =====
+  # ===== BROWSER TESTING =====
+  selenium-hub:
+    image: selenium/hub:4.15.0
+    container_name: interview_selenium_hub
+    ports:
+      - "4442:4442"
+      - "4443:4443"
+      - "4444:4444"
+    environment:
+      GRID_MAX_SESSION: 16
+      GRID_BROWSER_TIMEOUT: 300
+      GRID_TIMEOUT: 300
+    networks:
+      - interview_network
+
+  selenium-chrome:
+    image: selenium/node-chrome:4.15.0
+    container_name: interview_selenium_chrome
+    shm_size: 2gb
+    depends_on:
+      - selenium-hub
+    environment:
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_EVENT_BUS_PUBLISH_PORT: 4442
+      SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
+      SE_NODE_MAX_SESSIONS: 4
+      SE_NODE_OVERRIDE_MAX_SESSIONS: true
+    networks:
+      - interview_network
+
+  selenium-firefox:
+    image: selenium/node-firefox:4.15.0
+    container_name: interview_selenium_firefox
+    shm_size: 2gb
+    depends_on:
+      - selenium-hub
+    environment:
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_EVENT_BUS_PUBLISH_PORT: 4442
+      SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
+      SE_NODE_MAX_SESSIONS: 4
+      SE_NODE_OVERRIDE_MAX_SESSIONS: true
+    networks:
+      - interview_network
+
+  # ===== API TESTING =====
+  postman:
+    image: postman/newman:latest
+    container_name: interview_postman
+    volumes:
+      - ./tests/postman:/etc/newman:ro
+    working_dir: /etc/newman
+    networks:
+      - interview_network
+
+  # ===== PERFORMANCE TESTING =====
+  jmeter:
+    image: justb4/jmeter:latest
+    container_name: interview_jmeter
+    ports:
+      - "1099:1099"
+    volumes:
+      - ./tests/jmeter:/tests:ro
+      - jmeter_results:/results
+    working_dir: /tests
+    networks:
+      - interview_network
+
+  # ===== MOBILE TESTING =====
+  appium:
+    image: appium/appium:latest
+    container_name: interview_appium
+    ports:
+      - "4723:4723"
+    environment:
+      APPIUM_HOST: 0.0.0.0
+      APPIUM_PORT: 4723
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+      - ./tests/appium:/app:ro
+    privileged: true
+    networks:
+      - interview_network
+
+volumes:
+  jmeter_results:
+    driver: local
+
+networks:
+  interview_network:
+    external: true 

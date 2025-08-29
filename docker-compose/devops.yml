@@ -1,0 +1,197 @@
+version: '3.8'
+
+services:
+  # ===== DEVOPS ENGINEER SERVICES =====
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: interview_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: interview_user
+      RABBITMQ_DEFAULT_PASS: interview_password
+      RABBITMQ_DEFAULT_VHOST: interview_vhost
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - interview_network
+
+  # ===== MONITORING & OBSERVABILITY =====
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: interview_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.name=interview_cluster
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - interview_network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: interview_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - interview_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: interview_grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+      GF_USERS_ALLOW_SIGN_UP: false
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - interview_network
+
+  # ===== LOGGING =====
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: interview_logstash
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    volumes:
+      - ./monitoring/logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./monitoring/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    depends_on:
+      - elasticsearch
+    networks:
+      - interview_network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: interview_kibana
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - interview_network
+
+  # ===== SECURITY & QUALITY =====
+  sonarqube:
+    image: sonarqube:community
+    container_name: interview_sonarqube
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: true
+    ports:
+      - "9002:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/api/system/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - interview_network
+
+  # ===== CONTAINER REGISTRY =====
+  registry:
+    image: registry:2
+    container_name: interview_registry
+    ports:
+      - "5000:5000"
+    volumes:
+      - registry_data:/var/lib/registry
+    environment:
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
+    networks:
+      - interview_network
+
+  # ===== REVERSE PROXY =====
+  nginx:
+    image: nginx:alpine
+    container_name: interview_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - interview_network
+
+volumes:
+  rabbitmq_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  sonarqube_data:
+    driver: local
+  sonarqube_extensions:
+    driver: local
+  sonarqube_logs:
+    driver: local
+  registry_data:
+    driver: local
+
+networks:
+  interview_network:
+    external: true 
