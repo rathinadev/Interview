@@ -91,15 +91,6 @@ cd ../[your-role-directory]
 - **Document your solution** with clear setup and usage instructions
 - **Final Step**: Reach out to engineering@ragworks.ai with your repo link and a good README on how to run the program
 
-## 🏗️ System Architecture
-
-The system consists of:
-
-- **Role-Specific Directories** - Specialized problem sets for each engineering discipline
-- **LLM Challenge** - Optional advanced challenge for LLM/RAG development
-- **Modular Infrastructure** - Docker Compose services tailored to each role
-- **Base Services** - Common infrastructure (PostgreSQL, Redis) shared across roles
-
 ## 🔧 Infrastructure Services
 
 ### **Base Services** (All Roles)
@@ -215,7 +206,7 @@ docker-compose -f base.yml -f [role].yml logs -f [service]
 docker-compose -f base.yml -f [role].yml ps
 ```
 
-## 💡 Best Practices
+## 💡 Best Practices & Success Tips
 
 ### **Development**
 - **Start Simple**: Begin with a working solution, then optimize
@@ -251,30 +242,11 @@ docker-compose -f base.yml -f [role].yml ps
 - Verify service health: `docker-compose ps`
 - Contact engineering@ragworks.ai for support
 
-## 🎯 Success Tips
-
-1. **Focus on Your Role**: Don't try to understand the entire system
-2. **Start with Infrastructure**: Get services running before coding
-3. **Build Working Solutions**: Functionality over perfection
-4. **Document Everything**: Clear instructions are as important as code
-5. **Test Thoroughly**: Ensure your solution works end-to-end
-6. **Follow Best Practices**: Use industry-standard patterns and tools
-7. **Ask Questions**: Clarify requirements if anything is unclear
-
-## 🚀 Next Steps
-
-1. **Choose Your Role**: Navigate to the appropriate directory
-2. **Read Requirements**: Understand what you need to build
-3. **Start Infrastructure**: Use the appropriate startup script
-4. **Begin Development**: Start building your solution
-5. **Test and Document**: Ensure everything works and is documented
-6. **Submit**: Send your repository link to engineering@ragworks.ai
-
 ## 🤝 Support
 
 For technical support or questions:
 1. Check the role-specific documentation
-2. Review the system overview and docker-compose guides
+2. Review the docker-compose guides
 3. Contact the development team at engineering@ragworks.ai
 
 ---
