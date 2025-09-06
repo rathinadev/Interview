@@ -9,8 +9,7 @@ app = FastAPI(title="Product Service")
 
 @app.on_event("startup")
 async def startup_event():
-    database.init_db() # Create tables on startup
-    # Start the RabbitMQ listener in a separate thread
+    database.init_db() 
     listener_thread = threading.Thread(target=pika_client.start_consuming, daemon=True)
     listener_thread.start()
 

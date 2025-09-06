@@ -13,18 +13,16 @@ def create_product(db: Session, product: schemas.ProductCreate):
     return db_product
 
 def decrease_product_quantity(db: Session, product_id: int, quantity_to_decrease: int):
-    # We fetch the product, check the quantity, and then update.
-    # This is safer than using F() as it prevents race conditions.
+
     db_product = db.query(models.Product).filter(models.Product.id == product_id).with_for_update().first()
     
     if db_product and db_product.quantity >= quantity_to_decrease:
         db_product.quantity -= quantity_to_decrease
         db.commit()
     elif db_product:
-        # Not enough stock
         db.rollback()
-        raise ValueError(f"Not enough stock for product ID {product_id}. Available: {db_product.quantity}, Requested: {quantity_to_decrease}")
+        # In a real app, you would log this error or send a failure event.
+        print(f"ERROR: Not enough stock for product ID {product_id}.")
     else:
-        # Product not found
         db.rollback()
-        raise ValueError(f"Product with ID {product_id} not found for inventory update.")
+        print(f"ERROR: Product with ID {product_id} not found for inventory update.")

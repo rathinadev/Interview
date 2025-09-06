@@ -9,11 +9,6 @@ from shared.app import schemas, settings
 
 app = FastAPI(title="User Service")
 
-@app.on_event("startup")
-def on_startup():
-    # This event runs after the app is loaded, before it starts accepting requests.
-    # It's the perfect place to create DB tables.
-    database.init_db()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 settings_obj = settings.Settings()

@@ -86,12 +86,9 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      user_service:
-        condition: service_started
-      product_service:
-        condition: service_started
-      order_service:
-        condition: service_started
+      - user_service
+      - product_service
+      - order_service
     networks:
       - ecomm_network
 

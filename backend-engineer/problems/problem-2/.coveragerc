@@ -1,0 +1,10 @@
+[run]
+parallel = true
+source = app
+branch = true
+data_file = /code/coverage_data/.coverage
+
+[paths]
+source =
+    /code
+    .

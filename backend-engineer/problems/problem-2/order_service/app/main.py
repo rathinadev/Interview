@@ -7,9 +7,6 @@ from shared.app import schemas, settings
 
 app = FastAPI(title="Order Service")
 
-@app.on_event("startup")
-def on_startup():
-    database.init_db()
 
 settings_obj = settings.Settings()
 

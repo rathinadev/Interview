@@ -10,8 +10,7 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
-    class Config:
-        from_attributes = True
+    model_config = {'from_attributes': True}
 
 # --- Product Schemas ---
 class ProductBase(BaseModel):
@@ -24,8 +23,7 @@ class ProductCreate(ProductBase):
 class Product(ProductBase):
     id: int
     quantity: int
-    class Config:
-        from_attributes = True
+    model_config = {'from_attributes': True}
 
 # --- Order Schemas ---
 class OrderItemCreate(BaseModel):
@@ -41,8 +39,7 @@ class Order(BaseModel):
     total_price: float
     status: str
     items: List[OrderItemCreate] = []
-    class Config:
-        from_attributes = True
+    model_config = {'from_attributes': True}
 
 # --- Token Schemas ---
 class Token(BaseModel):

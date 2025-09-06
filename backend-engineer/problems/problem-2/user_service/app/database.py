@@ -4,10 +4,9 @@ from shared.app.settings import Settings
 from . import models
 
 settings = Settings()
-engine = create_engine(settings.DATABASE_URL)
+# Add pool_pre_ping to handle connection drops
+engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-Base = declarative_base()
 
 def get_db():
     db = SessionLocal()
@@ -15,7 +14,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
-def init_db():
-    # This will create all tables for the models registered with Base
-    models.Base.metadata.create_all(bind=engine)
