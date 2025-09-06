@@ -1,84 +1,103 @@
-version: '3.8'
-
 services:
-  # Base services from the interview setup
   postgres:
-    image: postgres:13
+    image: postgres:14-alpine
     environment:
       POSTGRES_USER: interview_user
       POSTGRES_PASSWORD: interview_password
     ports:
       - "5432:5432"
     networks:
-      - microservice_network
-
-  redis:
-    image: redis:6
-    command: redis-server --requirepass redis_password
-    ports:
-      - "6379:6379"
-    networks:
-      - microservice_network
+      - ecomm_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U interview_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:3.9-management
     ports:
-      - "5672:5672"   # For application connection
-      - "15672:15672" # For web management UI
+      - "5672:5672"
+      - "15672:15672"
     networks:
-      - microservice_network
+      - ecomm_network
 
-  # Application Microservices
   user_service:
-    build: ./user_service
+    build:
+      context: .
+      dockerfile: ./user_service/Dockerfile
     environment:
+      - PYTHONPATH=/code
       - DATABASE_URL=postgresql://interview_user:interview_password@postgres/user_db
-      - JWT_SECRET_KEY=a_very_secret_key
+      - JWT_SECRET_KEY=a_very_secret_key_that_is_shared
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
-      - microservice_network
+      - ecomm_network
 
   product_service:
-    build: ./product_service
+    build:
+      context: .
+      dockerfile: ./product_service/Dockerfile
     environment:
+      - PYTHONPATH=/code
       - DATABASE_URL=postgresql://interview_user:interview_password@postgres/product_db
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq/
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
     networks:
-      - microservice_network
+      - ecomm_network
 
   order_service:
-    build: ./order_service
+    build:
+      context: .
+      dockerfile: ./order_service/Dockerfile
     environment:
+      - PYTHONPATH=/code
       - DATABASE_URL=postgresql://interview_user:interview_password@postgres/order_db
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq/
       - PRODUCT_SERVICE_URL=http://product_service:8000
     depends_on:
-      - postgres
-      - rabbitmq
-      - product_service
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      product_service:
+        condition: service_started
     networks:
-      - microservice_network
+      - ecomm_network
 
   api_gateway:
-    build: ./api_gateway
-    ports:
-      - "8000:8000"
+    build:
+      context: .
+      dockerfile: ./api_gateway/Dockerfile
     environment:
+      - PYTHONPATH=/code
       - USER_SERVICE_URL=http://user_service:8000
       - PRODUCT_SERVICE_URL=http://product_service:8000
       - ORDER_SERVICE_URL=http://order_service:8000
-      - JWT_SECRET_KEY=a_very_secret_key # Must be the same as User Service
+      - JWT_SECRET_KEY=a_very_secret_key_that_is_shared
+    ports:
+      - "8000:8000"
     depends_on:
-      - user_service
-      - product_service
-      - order_service
+      user_service:
+        condition: service_started
+      product_service:
+        condition: service_started
+      order_service:
+        condition: service_started
     networks:
-      - microservice_network
+      - ecomm_network
+
+volumes:
+  postgres_data:
 
 networks:
-  microservice_network:
+  ecomm_network:
     driver: bridge
