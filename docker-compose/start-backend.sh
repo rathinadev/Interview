@@ -3,10 +3,10 @@
 echo "🚀 Starting Backend Engineer Services..."
 
 # Start base services first
-docker-compose -f base.yml up -d
+docker compose -f base.yml up -d
 
 # Start backend-specific services
-docker-compose -f backend.yml up -d
+docker compose -f backend.yml up -d
 
 echo "✅ Backend services started!"
 echo "📊 Available services:"

@@ -224,19 +224,3 @@ celerybeat-schedule
 !*.md
 !LICENSE
 !CHANGELOG.md
-
-# Keep source code structure
-!core/**/*.py
-!evaluation-tools/**/*.py
-!candidate-portal/backend/**/*.py
-!candidate-portal/frontend/**/*.ts
-!candidate-portal/frontend/**/*.tsx
-!candidate-portal/frontend/**/*.js
-!candidate-portal/frontend/**/*.jsx
-!candidate-portal/frontend/**/*.json
-!candidate-portal/frontend/**/*.css
-!candidate-portal/frontend/**/*.scss
-!backend-engineer/**/*
-!frontend-engineer/**/*
-!qa-engineer/**/*
-!devops-engineer/**/* 
