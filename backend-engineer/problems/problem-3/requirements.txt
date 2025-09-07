@@ -1,0 +1,18 @@
+# Main application
+fastapi
+uvicorn[standard]
+sqlalchemy
+asyncpg
+psycopg2-binary
+redis
+pydantic-settings
+faker
+sqlalchemy-utils
+python-dotenv
+
+# Testing
+requests
+coverage
+httpx
+
+  
