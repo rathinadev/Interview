@@ -22,11 +22,12 @@ docker compose exec postgres createdb -U interview_user product_db || true
 docker compose exec postgres createdb -U interview_user order_db || true
 echo "✅ Databases created."
 
-# 5. Run table creation via temporary containers
+# 5. --- THIS IS THE FIXED SECTION ---
+# Run table creation via temporary containers using the correct commands
 echo "🏗️ Creating tables..."
-docker compose run --rm user_service python -c "from app import database; database.init_db()"
-docker compose run --rm product_service python -c "from app import database; database.init_db()"
-docker compose run --rm order_service python -c "from app import database; database.init_db()"
+docker compose run --rm user_service python -c "from app.database import engine; from app.models import Base; Base.metadata.create_all(bind=engine)"
+docker compose run --rm product_service python -c "from app.database import engine; from app.models import Base; Base.metadata.create_all(bind=engine)"
+docker compose run --rm order_service python -c "from app.database import engine; from app.models import Base; Base.metadata.create_all(bind=engine)"
 echo "✅ Tables created."
 
 # 6. Wait for services to be fully up and running

@@ -97,16 +97,41 @@ Navigate to this solution's directory (`backend-engineer/problems/problem-3/`).
     -   In `app/models.py`, ensure the line is `category = Column(String)`.
     -   Run the database seeder: `python -m scripts.seed_db`.
 
-## 4. Validation & Usage
+## 4. Setup & Validation
 
-### Unified Test, Performance, and Coverage Script
-This project includes a single, self-contained script that serves as the definitive proof of the solution. It programmatically manages the database state, runs performance benchmarks, and generates a final, high-coverage report.
+The project is designed to be validated with a single script.
 
-**To run everything, execute this single command:**
-```bash
-# From this project's directory (problem-3/)
-python run_tests.py
+### 4.1. Environment Configuration (Critical First Step)
+
+The application loads its configuration from environment variables, following the 12-Factor App methodology. For local execution, these must be provided via a `.env` file.
+
+**Create a `.env` file in the root of this directory (`problem-3/`) and paste the following content:**
+
+```env
+# PostgreSQL Settings (Used for application startup, but overridden by tests)
+DB_USER=interview_user
+DB_PASSWORD=interview_password
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=interview_db
+
+# Redis Settings (Used for application startup, but overridden by tests)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=redis_password
 ```
+
+### 4.2. Automated Test Execution
+The provided `run_tests.sh` script handles all necessary dependency installation and test execution.
+
+From the root of this solution directory, execute:
+```bash
+./run_tests.sh
+```
+This script will:
+1.  Create a local Python virtual environment (`venv/`).
+2.  Install all required application and test dependencies from `requirements.txt`.
+3.  Execute the `pytest` suite and generate a code coverage report.
 
 ### Final Results
 The script produces a clear, quantitative report demonstrating the success of the optimizations.
