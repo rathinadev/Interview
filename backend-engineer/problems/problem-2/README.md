@@ -94,7 +94,7 @@ The entire system is designed to be validated via a single, automated script.
 This is the primary and definitive method for running and validating the entire architecture from a clean state. From the root of this solution directory (`backend-engineer/problems/problem-2/`), execute:
 
 ```bash
-./run_test.sh
+./run_coverage_test.sh
 ```
 This script automates the full system lifecycle:
 1.  **Cleanup**: Tears down any pre-existing containers, networks, and volumes.
@@ -107,7 +107,7 @@ A **`1 passed`** result from this script is the conclusive evidence that the ent
 
 ## 6. Manual Operation & Validation
 
-This section provides a complete guide for manually launching, initializing, inspecting, and testing the system. These steps are automated by the `run_test.sh` script but are documented here for direct, hands-on validation and exploration.
+This section provides a complete guide for manually launching, initializing, inspecting, and testing the system. These steps are automated by the `run_coverage_test.sh` script but are documented here for direct, hands-on validation and exploration.
 
 ### 6.1. System Launch & Initialization
 
